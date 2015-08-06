@@ -1,3 +1,5 @@
+use std::io;
+
 #[derive(Copy, Clone, Debug)]
 enum Player {
     YeonSeung,
@@ -384,18 +386,44 @@ fn main() {
     }
 
     if interactive {
-        let (result, best_move) = minimax_alpha_beta(starting_player, &mut starting_board, GameResult::PlaceholderJunSeok, GameResult::PlaceholderYeonSeung);
-        println!("{:?}", result);
-        println!("{:?}", best_move);
-        match best_move {
-            Some(x) => {
-                starting_board.make_move(x);
-                starting_board.print();
-            },
-            None => (),
-        }
-        for legal_move in starting_board.legal_moves().iter() {
-            println!("{:?}", legal_move);
+        let mut player = starting_player;
+        loop {
+            let (result, best_move) = minimax_alpha_beta(player, &mut starting_board, GameResult::PlaceholderJunSeok, GameResult::PlaceholderYeonSeung);
+            println!("{:?}", result);
+            println!("{:?}", best_move);
+            match best_move {
+                Some(x) => {
+                    starting_board.make_move(x);
+                    starting_board.print();
+                },
+                None => println!("No move, guess {:?} wins?", player.opponent()),
+            }
+
+            player = player.opponent();
+
+            let moves = starting_board.legal_moves();
+            if moves.is_empty() {
+                println!("No moves left, {:?} wins", player.opponent());
+                break;
+            }
+            for (i, legal_move) in moves.iter().enumerate() {
+                println!("{} {:?}", i, legal_move);
+            }
+            println!("It's {:?}'s turn. What move?", player);
+            let mut input_move = String::new();
+            io::stdin().read_line(&mut input_move).ok().expect("Failed to read line");
+            let input_move: usize = input_move.trim().parse().ok().expect("Give me a number");
+            let mut found = false;
+            for (i, legal_move) in moves.iter().enumerate() {
+                if i == input_move {
+                    starting_board.make_move(*legal_move);
+                    player = player.opponent();
+                    found = true;
+                }
+            }
+            if !found {
+                println!("Not found. Auto-calculating a move.")
+            }
         }
     }
 }
