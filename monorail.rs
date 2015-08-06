@@ -224,7 +224,7 @@ impl Board {
                     if other_space.induces_board_type() {
                         induces_board_type = true;
                     }
-                    if self.occupied(*other_space) {
+                    if self.occupied(*other_space) || Board::makes_unsolvable(*other_space, self.board_type) {
                         other_space_taken = true;
                         break;
                     }
