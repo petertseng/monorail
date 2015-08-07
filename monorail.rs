@@ -334,7 +334,15 @@ impl Board {
     }
 
     fn print(&self) {
-        for row in self.board.iter() {
+        // Print header row
+        print!("   ");
+        for i in 0..NUM_COLS {
+            print!("{: >5} ", i);
+        }
+        println!("");
+
+        for (i, row) in self.board.iter().enumerate() {
+            print!("{: >2} ", i);
             for col in row.iter() {
                 print!("{: >5} ", col);
             }
