@@ -330,6 +330,25 @@ fn minimax_alpha_beta(player: Player, board: &mut Board, initial_alpha: GameResu
     (best, best_move)
 }
 
+fn print_all_responses(player: Player, starting_board: &mut Board) {
+    for legal_move in starting_board.legal_moves().iter() {
+        print!("If {:?} does: {:?}, ", player, legal_move);
+        let bt = starting_board.board_type;
+        starting_board.make_move(*legal_move);
+        let (result, best_move) = minimax_alpha_beta(player.opponent(), starting_board, GameResult::PlaceholderJunSeok, GameResult::PlaceholderYeonSeung);
+        match best_move {
+            Some(x) => {
+                println!("{:?} does: {:?}, {:?}", player.opponent(), x, result);
+                starting_board.make_move(x);
+                starting_board.print();
+                starting_board.undo_move(x, bt);
+            }
+            None => (),
+        }
+        starting_board.undo_move(*legal_move, bt);
+    }
+}
+
 fn main() {
     let mut starting_board = Board{
         board: [
@@ -367,22 +386,7 @@ fn main() {
     }
 
     if all_responses {
-        for legal_move in starting_board.legal_moves().iter() {
-            print!("{:?} does: {:?}, ", starting_player, legal_move);
-            let bt = starting_board.board_type;
-            starting_board.make_move(*legal_move);
-            let (result, best_move) = minimax_alpha_beta(starting_player.opponent(), &mut starting_board, GameResult::PlaceholderJunSeok, GameResult::PlaceholderYeonSeung);
-            match best_move {
-                Some(x) => {
-                    println!("{:?} does: {:?}, {:?}", starting_player.opponent(), x, result);
-                    starting_board.make_move(x);
-                    starting_board.print();
-                    starting_board.undo_move(x, bt);
-                }
-                None => (),
-            }
-            starting_board.undo_move(*legal_move, bt);
-        }
+        print_all_responses(starting_player, &mut starting_board);
     }
 
     if interactive {
