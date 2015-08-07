@@ -316,14 +316,7 @@ impl Board {
                             if !board_type.induced_by(*frontier_space) {
                                 continue;
                             }
-                            let mut other_spaces_ok = true;
-                            for other_space in mov.extensions().iter() {
-                                if !board_type.induced_by(*other_space) {
-                                    other_spaces_ok = false;
-                                    break;
-                                }
-                            }
-                            if other_spaces_ok {
+                            if mov.extensions().iter().all(|coord| board_type.induced_by(*coord)) {
                                 ok_board_types.insert(*board_type);
                             }
                         }
