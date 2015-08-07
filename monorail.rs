@@ -127,8 +127,10 @@ impl BoardType {
             BoardType::RightOrMiddle => false,
         }
     }
-    fn compatible(current: Option<BoardType>, proposed: BoardType) -> bool {
-        match (current, proposed) {
+
+    // Can a board of type `current` become this type?
+    fn applies_to(&self, current: Option<BoardType>) -> bool {
+        match (current, *self) {
             // a none board type can change to anything.
             (None, _) => true,
             // LeftOrMiddle can change to itself, left, or middle.
@@ -185,7 +187,7 @@ impl Board {
     fn make_move(&mut self, m: Move) {
         match m.board_type {
             Some(bt) => {
-                if !BoardType::compatible(self.board_type, bt) {
+                if !bt.applies_to(self.board_type) {
                     panic!("Board type is {:?}, not compatible with {:?}", self.board_type, bt);
                 }
                 self.board_type = m.board_type
@@ -308,7 +310,7 @@ impl Board {
                     if induces_board_type && !self.board_type_final() {
                         let mut ok_board_types = BTreeSet::new();
                         for board_type in POSSIBLE_BOARD_TYPES.iter() {
-                            if !BoardType::compatible(self.board_type, *board_type) {
+                            if !board_type.applies_to(self.board_type) {
                                 continue;
                             }
                             if !board_type.induced_by(*frontier_space) {
