@@ -167,7 +167,12 @@ struct Board {
 impl Board {
     fn make_move(&mut self, m: Move) {
         match m.board_type {
-            Some(_) => self.board_type = m.board_type,
+            Some(bt) => {
+                if !BoardType::compatible(self.board_type, bt) {
+                    panic!("Board type is {:?}, not compatible with {:?}", self.board_type, bt);
+                }
+                self.board_type = m.board_type
+            },
             None => (),
         }
         self.set_squares(m, true)
