@@ -220,14 +220,19 @@ impl Board {
     }
 
     // Unfortunately I kind of have to hard-code this.
-    fn makes_unsolvable(c: Coordinate, b: Option<BoardType>) -> bool {
+    fn compatible(c: Coordinate, b: Option<BoardType>) -> bool {
+        // Not in the lower left, so it's a free pass.
+        if !c.induces_board_type() {
+            return true;
+        }
+
         match b {
-            Some(BoardType::Left)          => c == Coordinate{row: 2, col: 1} || c == Coordinate{row: 1, col: 1},
-            Some(BoardType::LeftOrMiddle)  => c == Coordinate{row: 1, col: 1} || c == Coordinate{row: 2, col: 0},
-            Some(BoardType::Middle)        => c == Coordinate{row: 3, col: 0} || c == Coordinate{row: 1, col: 1},
-            Some(BoardType::RightOrMiddle) => c == Coordinate{row: 3, col: 0} || c == Coordinate{row: 2, col: 2},
-            Some(BoardType::Right)         => c == Coordinate{row: 3, col: 0} || c == Coordinate{row: 2, col: 0},
-            None => false,
+            Some(BoardType::Left)          => c != Coordinate{row: 2, col: 1} && c != Coordinate{row: 1, col: 1},
+            Some(BoardType::LeftOrMiddle)  => c == Coordinate{row: 1, col: 0},
+            Some(BoardType::Middle)        => c != Coordinate{row: 3, col: 0} && c != Coordinate{row: 1, col: 1},
+            Some(BoardType::RightOrMiddle) => c == Coordinate{row: 3, col: 1},
+            Some(BoardType::Right)         => c != Coordinate{row: 3, col: 0} && c != Coordinate{row: 2, col: 0},
+            None => true,
         }
     }
 
@@ -236,7 +241,7 @@ impl Board {
         for row in 0..NUM_ROWS {
             for col in 0..NUM_COLS {
                 let coord = Coordinate{row: row, col: col};
-                if self.occupied(coord) || Board::makes_unsolvable(coord, self.board_type) {
+                if self.occupied(coord) || !Board::compatible(coord, self.board_type) {
                     continue;
                 }
                 let mut have_neighbor = false;
@@ -276,7 +281,7 @@ impl Board {
                     if other_space.induces_board_type() {
                         induces_board_type = true;
                     }
-                    if self.occupied(*other_space) || Board::makes_unsolvable(*other_space, self.board_type) {
+                    if self.occupied(*other_space) || !Board::compatible(*other_space, self.board_type) {
                         other_space_taken = true;
                         break;
                     }
@@ -287,12 +292,12 @@ impl Board {
                             if !BoardType::compatible(self.board_type, *board_type) {
                                 continue;
                             }
-                            if Board::makes_unsolvable(*frontier_space, Some(*board_type)) {
+                            if !Board::compatible(*frontier_space, Some(*board_type)) {
                                 continue;
                             }
                             let mut other_spaces_ok = true;
                             for other_space in mov.coords().iter() {
-                                if Board::makes_unsolvable(*other_space, Some(*board_type)) {
+                                if !Board::compatible(*other_space, Some(*board_type)) {
                                     other_spaces_ok = false;
                                     break;
                                 }
