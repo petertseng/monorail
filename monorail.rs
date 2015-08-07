@@ -1,4 +1,5 @@
 use std::collections::BTreeSet;
+use std::env;
 use std::io;
 
 #[derive(Copy, Clone, Debug)]
@@ -452,10 +453,23 @@ fn main() {
     };
     let starting_player = Player::YeonSeung;
 
-    let all_responses = false;
-    let best_move = false;
-    let legal_moves = false;
-    let interactive = true;
+    let mut all_responses = false;
+    let mut best_move = false;
+    let mut legal_moves = false;
+
+    for argument in env::args() {
+        if argument == "-b" {
+            best_move = true;
+        }
+        if argument == "-a" {
+            all_responses = true;
+        }
+        if argument == "-l" {
+            legal_moves = true;
+        }
+    }
+
+    let interactive = !all_responses && !best_move && !legal_moves;
 
     if legal_moves {
         for legal_move in starting_board.legal_moves().iter() {
