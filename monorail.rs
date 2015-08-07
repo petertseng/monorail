@@ -490,6 +490,8 @@ fn main() {
             io::stdin().read_line(&mut input_move).ok().expect("Failed to read line");
             if input_move.trim() == "analyze" {
                 print_all_responses(player, &mut starting_board);
+            } else if input_move.trim() == "best" {
+                print_best_move(player, &mut starting_board);
             } else {
                 let input_move: usize = match input_move.trim().parse() {
                     Ok(num) => num,
