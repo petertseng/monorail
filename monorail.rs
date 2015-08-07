@@ -150,6 +150,21 @@ impl BoardType {
             (Some(BoardType::Right), _) => false,
         }
     }
+
+    fn induced_by(&self, c: Coordinate) -> bool {
+        // Not in the lower left, so it's a free pass.
+        if !c.induces_board_type() {
+            return true;
+        }
+
+        match *self {
+            BoardType::Left          => c != Coordinate{row: 2, col: 1} && c != Coordinate{row: 1, col: 1},
+            BoardType::LeftOrMiddle  => c == Coordinate{row: 1, col: 0},
+            BoardType::Middle        => c != Coordinate{row: 3, col: 0} && c != Coordinate{row: 1, col: 1},
+            BoardType::RightOrMiddle => c == Coordinate{row: 3, col: 1},
+            BoardType::Right         => c != Coordinate{row: 3, col: 0} && c != Coordinate{row: 2, col: 0},
+        }
+    }
 }
 
 const POSSIBLE_BOARD_TYPES: [BoardType; 5] = [
@@ -221,18 +236,19 @@ impl Board {
         }
     }
 
-    // Unfortunately I kind of have to hard-code this.
-    fn compatible(c: Coordinate, b: Option<BoardType>) -> bool {
+    // This assesses whether a coordinate can be placed on the board,
+    // given the current type of the board.
+    fn compatible(&self, c: Coordinate) -> bool {
         // Not in the lower left, so it's a free pass.
         if !c.induces_board_type() {
             return true;
         }
 
-        match b {
+        match self.board_type {
             Some(BoardType::Left)          => c != Coordinate{row: 2, col: 1} && c != Coordinate{row: 1, col: 1},
-            Some(BoardType::LeftOrMiddle)  => c == Coordinate{row: 1, col: 0},
+            Some(BoardType::LeftOrMiddle)  => c != Coordinate{row: 1, col: 1},
             Some(BoardType::Middle)        => c != Coordinate{row: 3, col: 0} && c != Coordinate{row: 1, col: 1},
-            Some(BoardType::RightOrMiddle) => c == Coordinate{row: 3, col: 1},
+            Some(BoardType::RightOrMiddle) => c != Coordinate{row: 3, col: 0},
             Some(BoardType::Right)         => c != Coordinate{row: 3, col: 0} && c != Coordinate{row: 2, col: 0},
             None => true,
         }
@@ -243,7 +259,7 @@ impl Board {
         for row in 0..NUM_ROWS {
             for col in 0..NUM_COLS {
                 let coord = Coordinate{row: row, col: col};
-                if self.occupied(coord) || !Board::compatible(coord, self.board_type) {
+                if self.occupied(coord) || !self.compatible(coord) {
                     continue;
                 }
                 let mut have_neighbor = false;
@@ -283,7 +299,7 @@ impl Board {
                     if other_space.induces_board_type() {
                         induces_board_type = true;
                     }
-                    if self.occupied(*other_space) || !Board::compatible(*other_space, self.board_type) {
+                    if self.occupied(*other_space) || !self.compatible(*other_space) {
                         other_space_taken = true;
                         break;
                     }
@@ -295,12 +311,12 @@ impl Board {
                             if !BoardType::compatible(self.board_type, *board_type) {
                                 continue;
                             }
-                            if !Board::compatible(*frontier_space, Some(*board_type)) {
+                            if !board_type.induced_by(*frontier_space) {
                                 continue;
                             }
                             let mut other_spaces_ok = true;
                             for other_space in mov.coords().iter() {
-                                if !Board::compatible(*other_space, Some(*board_type)) {
+                                if !board_type.induced_by(*other_space) {
                                     other_spaces_ok = false;
                                     break;
                                 }
