@@ -392,19 +392,6 @@ fn main() {
     if interactive {
         let mut player = starting_player;
         loop {
-            let (result, best_move) = minimax_alpha_beta(player, &mut starting_board, GameResult::PlaceholderJunSeok, GameResult::PlaceholderYeonSeung);
-            println!("{:?}", result);
-            println!("{:?}", best_move);
-            match best_move {
-                Some(x) => {
-                    starting_board.make_move(x);
-                    starting_board.print();
-                },
-                None => println!("No move, guess {:?} wins?", player.opponent()),
-            }
-
-            player = player.opponent();
-
             let moves = starting_board.legal_moves();
             if moves.is_empty() {
                 println!("No moves left, {:?} wins", player.opponent());
