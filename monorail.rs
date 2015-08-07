@@ -403,17 +403,24 @@ fn main() {
             println!("It's {:?}'s turn. What move?", player);
             let mut input_move = String::new();
             io::stdin().read_line(&mut input_move).ok().expect("Failed to read line");
-            let input_move: usize = input_move.trim().parse().ok().expect("Give me a number");
-            let mut found = false;
-            for (i, legal_move) in moves.iter().enumerate() {
-                if i == input_move {
-                    starting_board.make_move(*legal_move);
-                    player = player.opponent();
-                    found = true;
+            if input_move.trim() == "analyze" {
+                print_all_responses(player, &mut starting_board);
+            } else {
+                let input_move: usize = match input_move.trim().parse() {
+                    Ok(num) => num,
+                    Err(_) => { println!("Not a number."); continue },
+                };
+                let mut found = false;
+                for (i, legal_move) in moves.iter().enumerate() {
+                    if i == input_move {
+                        starting_board.make_move(*legal_move);
+                        player = player.opponent();
+                        found = true;
+                    }
                 }
-            }
-            if !found {
-                println!("Not found. Auto-calculating a move.")
+                if !found {
+                    println!("Move not found.");
+                }
             }
         }
     }
