@@ -391,12 +391,15 @@ fn main() {
 
     if interactive {
         let mut player = starting_player;
+        let mut turn_counter = 1;
         loop {
+            println!("=================== Turn {} ===================", turn_counter);
             let moves = starting_board.legal_moves();
             if moves.is_empty() {
                 println!("No moves left, {:?} wins", player.opponent());
                 break;
             }
+            starting_board.print();
             for (i, legal_move) in moves.iter().enumerate() {
                 println!("{} {:?}", i, legal_move);
             }
@@ -416,6 +419,7 @@ fn main() {
                         starting_board.make_move(*legal_move);
                         player = player.opponent();
                         found = true;
+                        turn_counter += 1;
                     }
                 }
                 if !found {
