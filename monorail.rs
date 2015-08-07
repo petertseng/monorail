@@ -526,17 +526,13 @@ fn main() {
                     Ok(num) => num,
                     Err(_) => { println!("Not a number."); continue },
                 };
-                let mut found = false;
-                for (i, legal_move) in moves.iter().enumerate() {
-                    if i == input_move {
+                match moves.get(input_move) {
+                    Some(legal_move) => {
                         starting_board.make_move(*legal_move);
                         player = player.opponent();
-                        found = true;
                         turn_counter += 1;
-                    }
-                }
-                if !found {
-                    println!("Move not found.");
+                    },
+                    None => println!("Move not found.")
                 }
             }
         }
