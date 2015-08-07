@@ -87,7 +87,7 @@ struct Move {
     board_type: Option<BoardType>,
 }
 impl Move {
-    fn coords(&self) -> Vec<Coordinate> {
+    fn extensions(&self) -> Vec<Coordinate> {
         match self.move_type {
             MoveType::Single => vec![],
             MoveType::OneUp => vec![self.coord.move_in(Direction::Up, 1)],
@@ -204,7 +204,7 @@ impl Board {
 
     fn set_squares(&mut self, m: Move, mode: bool) {
         self.board[m.coord.row][m.coord.col] = mode;
-        for other_space in m.coords().iter() {
+        for other_space in m.extensions().iter() {
             self.board[other_space.row][other_space.col] = mode;
         }
     }
@@ -297,7 +297,7 @@ impl Board {
                 }
                 let mut other_space_taken = false;
                 let mut induces_board_type = frontier_space.induces_board_type();
-                for other_space in mov.coords().iter() {
+                for other_space in mov.extensions().iter() {
                     if other_space.induces_board_type() {
                         induces_board_type = true;
                     }
@@ -317,7 +317,7 @@ impl Board {
                                 continue;
                             }
                             let mut other_spaces_ok = true;
-                            for other_space in mov.coords().iter() {
+                            for other_space in mov.extensions().iter() {
                                 if !board_type.induced_by(*other_space) {
                                     other_spaces_ok = false;
                                     break;
