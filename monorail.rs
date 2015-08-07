@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::io;
 
 #[derive(Copy, Clone, Debug)]
@@ -106,7 +107,7 @@ const NUM_COLS: usize = 5;
 const NUM_ROWS: usize = 4;
 
 // Hacks for the three states of the lower-left of the board in JunSeok vs YeonSeung game
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Debug)]
 enum BoardType {
     Left,
     LeftOrMiddle,
@@ -288,6 +289,7 @@ impl Board {
                 }
                 if !other_space_taken {
                     if induces_board_type && !self.board_type_final() {
+                        let mut ok_board_types = BTreeSet::new();
                         for board_type in POSSIBLE_BOARD_TYPES.iter() {
                             if !BoardType::compatible(self.board_type, *board_type) {
                                 continue;
@@ -303,8 +305,22 @@ impl Board {
                                 }
                             }
                             if other_spaces_ok {
-                                results.push(Move{coord: mov.coord, move_type: mov.move_type, board_type: Some(*board_type)});
+                                ok_board_types.insert(*board_type);
                             }
+                        }
+
+                        // Dominated board types...
+                        if ok_board_types.contains(&BoardType::LeftOrMiddle) {
+                            ok_board_types.remove(&BoardType::Left);
+                            ok_board_types.remove(&BoardType::Middle);
+                        }
+                        if ok_board_types.contains(&BoardType::RightOrMiddle) {
+                            ok_board_types.remove(&BoardType::Right);
+                            ok_board_types.remove(&BoardType::Middle);
+                        }
+
+                        for board_type in ok_board_types.iter() {
+                            results.push(Move{coord: mov.coord, move_type: mov.move_type, board_type: Some(*board_type)});
                         }
 
                     } else {
