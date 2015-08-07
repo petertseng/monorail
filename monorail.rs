@@ -425,6 +425,21 @@ fn print_all_responses(player: Player, starting_board: &mut Board) {
     }
 }
 
+fn print_best_move(player: Player, starting_board: &mut Board) {
+    let (result, best_move) = minimax_alpha_beta(player, starting_board, GameResult::PlaceholderJunSeok, GameResult::PlaceholderYeonSeung);
+    println!("{:?}", result);
+    println!("{:?}", best_move);
+    match best_move {
+        Some(x) => {
+            let bt = starting_board.board_type;
+            starting_board.make_move(x);
+            starting_board.print();
+            starting_board.undo_move(x, bt);
+        },
+        None => (),
+    }
+}
+
 fn main() {
     let mut starting_board = Board{
         board: [
@@ -449,16 +464,7 @@ fn main() {
     }
 
     if best_move {
-        let (result, best_move) = minimax_alpha_beta(starting_player, &mut starting_board, GameResult::PlaceholderJunSeok, GameResult::PlaceholderYeonSeung);
-        println!("{:?}", result);
-        println!("{:?}", best_move);
-        match best_move {
-            Some(x) => {
-                starting_board.make_move(x);
-                starting_board.print();
-            },
-            None => (),
-        }
+        print_best_move(starting_player, &mut starting_board);
     }
 
     if all_responses {
