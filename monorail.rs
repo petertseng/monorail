@@ -503,9 +503,9 @@ fn main() {
             let mut input_move = String::new();
             io::stdin().read_line(&mut input_move).ok().expect("Failed to read line");
             let input_move = input_move.trim();
-            if input_move == "analyze" {
+            if input_move == "analyze" || input_move == "a" {
                 print_all_responses(player, &mut starting_board);
-            } else if input_move == "best" {
+            } else if input_move == "best" || input_move == "b" {
                 print_best_move(player, &mut starting_board);
             } else {
                 let input_move: usize = match input_move.trim().parse() {
