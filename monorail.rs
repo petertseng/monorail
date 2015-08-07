@@ -502,9 +502,10 @@ fn main() {
             println!("It's {:?}'s turn. What move?", player);
             let mut input_move = String::new();
             io::stdin().read_line(&mut input_move).ok().expect("Failed to read line");
-            if input_move.trim() == "analyze" {
+            let input_move = input_move.trim();
+            if input_move == "analyze" {
                 print_all_responses(player, &mut starting_board);
-            } else if input_move.trim() == "best" {
+            } else if input_move == "best" {
                 print_best_move(player, &mut starting_board);
             } else {
                 let input_move: usize = match input_move.trim().parse() {
