@@ -360,10 +360,10 @@ impl Board {
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 enum GameResult {
-    PlaceholderJunSeok,
+    PlaceholderAlpha,
     JunSeokWin,
     YeonSeungWin,
-    PlaceholderYeonSeung,
+    PlaceholderBeta,
 }
 
 fn minimax_alpha_beta(player: Player, board: &mut Board, initial_alpha: GameResult, initial_beta: GameResult) -> (GameResult, Option<Move>) {
@@ -426,7 +426,7 @@ fn print_all_responses(player: Player, starting_board: &mut Board) {
         print!("If {:?} does: {:?}, ", player, legal_move);
         let bt = starting_board.board_type;
         starting_board.make_move(*legal_move);
-        let (result, best_move) = minimax_alpha_beta(player.opponent(), starting_board, GameResult::PlaceholderJunSeok, GameResult::PlaceholderYeonSeung);
+        let (result, best_move) = minimax_alpha_beta(player.opponent(), starting_board, GameResult::PlaceholderAlpha, GameResult::PlaceholderBeta);
         match best_move {
             Some(x) => {
                 println!("{:?} does: {:?}, {:?}", player.opponent(), x, result);
@@ -441,7 +441,7 @@ fn print_all_responses(player: Player, starting_board: &mut Board) {
 }
 
 fn print_best_move(player: Player, starting_board: &mut Board) {
-    let (result, best_move) = minimax_alpha_beta(player, starting_board, GameResult::PlaceholderJunSeok, GameResult::PlaceholderYeonSeung);
+    let (result, best_move) = minimax_alpha_beta(player, starting_board, GameResult::PlaceholderAlpha, GameResult::PlaceholderBeta);
     println!("{:?}", result);
     println!("{:?}", best_move);
     match best_move {
