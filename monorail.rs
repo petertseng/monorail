@@ -31,10 +31,8 @@ impl Coordinate {
         }
     }
     fn induces_board_type(&self) -> bool {
-        *self == Coordinate{row: 1, col: 1} ||
-        *self == Coordinate{row: 2, col: 1} ||
-        *self == Coordinate{row: 2, col: 0} ||
-        *self == Coordinate{row: 3, col: 0}
+        // The lower left corner of the board.
+        self.col < 2 && self.row >= 1
     }
 }
 
@@ -111,12 +109,52 @@ const NUM_ROWS: usize = 4;
 #[derive(Copy, Clone, Debug)]
 enum BoardType {
     Left,
+    LeftOrMiddle,
     Middle,
+    RightOrMiddle,
     Right,
 }
-const POSSIBLE_BOARD_TYPES: [BoardType; 3] = [
+
+impl BoardType {
+    fn is_final(&self) -> bool {
+        match *self {
+            BoardType::Left => true,
+            BoardType::Middle => true,
+            BoardType::Right => true,
+            BoardType::LeftOrMiddle => false,
+            BoardType::RightOrMiddle => false,
+        }
+    }
+    fn compatible(current: Option<BoardType>, proposed: BoardType) -> bool {
+        match (current, proposed) {
+            // a none board type can change to anything.
+            (None, _) => true,
+            // LeftOrMiddle can change to itself, left, or middle.
+            (Some(BoardType::LeftOrMiddle), BoardType::LeftOrMiddle) => true,
+            (Some(BoardType::LeftOrMiddle), BoardType::Left) => true,
+            (Some(BoardType::LeftOrMiddle), BoardType::Middle) => true,
+            (Some(BoardType::LeftOrMiddle), _) => false,
+            // RightOrMiddle can change to itself, right, or middle.
+            (Some(BoardType::RightOrMiddle), BoardType::RightOrMiddle) => true,
+            (Some(BoardType::RightOrMiddle), BoardType::Right) => true,
+            (Some(BoardType::RightOrMiddle), BoardType::Middle) => true,
+            (Some(BoardType::RightOrMiddle), _) => false,
+            // Left, Middle, Right can change to themselves only.
+            (Some(BoardType::Left), BoardType::Left) => true,
+            (Some(BoardType::Left), _) => false,
+            (Some(BoardType::Middle), BoardType::Middle) => true,
+            (Some(BoardType::Middle), _) => false,
+            (Some(BoardType::Right), BoardType::Right) => true,
+            (Some(BoardType::Right), _) => false,
+        }
+    }
+}
+
+const POSSIBLE_BOARD_TYPES: [BoardType; 5] = [
     BoardType::Left,
+    BoardType::LeftOrMiddle,
     BoardType::Middle,
+    BoardType::RightOrMiddle,
     BoardType::Right,
 ];
 
@@ -179,9 +217,11 @@ impl Board {
     // Unfortunately I kind of have to hard-code this.
     fn makes_unsolvable(c: Coordinate, b: Option<BoardType>) -> bool {
         match b {
-            Some(BoardType::Left)   => c == Coordinate{row: 2, col: 1} || c == Coordinate{row: 1, col: 1},
-            Some(BoardType::Middle) => c == Coordinate{row: 3, col: 0} || c == Coordinate{row: 1, col: 1},
-            Some(BoardType::Right)  => c == Coordinate{row: 3, col: 0} || c == Coordinate{row: 2, col: 0},
+            Some(BoardType::Left)          => c == Coordinate{row: 2, col: 1} || c == Coordinate{row: 1, col: 1},
+            Some(BoardType::LeftOrMiddle)  => c == Coordinate{row: 1, col: 1} || c == Coordinate{row: 2, col: 0},
+            Some(BoardType::Middle)        => c == Coordinate{row: 3, col: 0} || c == Coordinate{row: 1, col: 1},
+            Some(BoardType::RightOrMiddle) => c == Coordinate{row: 3, col: 0} || c == Coordinate{row: 2, col: 2},
+            Some(BoardType::Right)         => c == Coordinate{row: 3, col: 0} || c == Coordinate{row: 2, col: 0},
             None => false,
         }
     }
@@ -210,6 +250,13 @@ impl Board {
         results
     }
 
+    fn board_type_final(&self) -> bool {
+        match self.board_type {
+            Some(x) => x.is_final(),
+            None => false,
+        }
+    }
+
     fn legal_moves(&self) -> Vec<Move> {
         let mut results = Vec::new();
         for frontier_space in self.frontier().iter() {
@@ -230,8 +277,11 @@ impl Board {
                     }
                 }
                 if !other_space_taken {
-                    if induces_board_type && self.board_type.is_none() {
+                    if induces_board_type && !self.board_type_final() {
                         for board_type in POSSIBLE_BOARD_TYPES.iter() {
+                            if !BoardType::compatible(self.board_type, *board_type) {
+                                continue;
+                            }
                             if Board::makes_unsolvable(*frontier_space, Some(*board_type)) {
                                 continue;
                             }
