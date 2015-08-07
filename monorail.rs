@@ -264,14 +264,9 @@ impl Board {
                 if self.occupied(coord) || !self.compatible(coord) {
                     continue;
                 }
-                let mut have_neighbor = false;
-                for dir in POSSIBLE_DIRECTIONS.iter() {
-                    let new_coord = coord.move_in(*dir, 1);
-                    if self.occupied(new_coord) {
-                        have_neighbor = true;
-                        break;
-                    }
-                }
+                let have_neighbor = POSSIBLE_DIRECTIONS.iter().any(|dir| {
+                    self.occupied(coord.move_in(*dir, 1))
+                });
                 if have_neighbor {
                     results.push(coord);
                 }
