@@ -1,2 +1,3 @@
 *.swp
-monorail
+target
+Cargo.lock
