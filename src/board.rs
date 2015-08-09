@@ -332,3 +332,278 @@ impl Display for Board {
         formatter.write_str("┘\n")
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{Board,BoardArray,BoardType};
+    use action::Coordinate;
+
+    const START_BOARD: BoardArray = [
+        [false,  true,  true,  true, false],
+        [false, false, false,  true, false],
+        [false, false, false,  true, false],
+        [false, false, false, false, false],
+    ];
+
+    const LEFT_BOARD_FROM_TOP: BoardArray = [
+        [ true,  true,  true,  true, false],
+        [ true, false, false,  true, false],
+        [ true, false, false,  true, false],
+        [false, false,  true,  true, false],
+    ];
+
+    const LEFT_BOARD_FROM_BOTTOM: BoardArray = [
+        [ true,  true,  true,  true, false],
+        [false, false, false,  true, false],
+        [false, false, false,  true, false],
+        [ true,  true,  true,  true, false],
+    ];
+
+    const MIDDLE_BOARD_FROM_LEFT: BoardArray = [
+        [ true,  true,  true,  true, false],
+        [ true, false, false,  true, false],
+        [ true, false, false,  true, false],
+        [false, false,  true,  true, false],
+    ];
+
+    const MIDDLE_BOARD_FROM_RIGHT: BoardArray = [
+        [ true,  true,  true,  true, false],
+        [false, false, false,  true, false],
+        [false,  true,  true,  true, false],
+        [false, false, false, false, false],
+    ];
+
+    const RIGHT_BOARD_FROM_TOP: BoardArray = [
+        [ true,  true,  true,  true, false],
+        [false,  true, false,  true, false],
+        [false, false,  true,  true, false],
+        [false, false,  true,  true, false],
+    ];
+
+    const RIGHT_BOARD_FROM_BOTTOM: BoardArray = [
+        [ true,  true,  true,  true, false],
+        [false, false, false,  true, false],
+        [false,  true, false,  true, false],
+        [false,  true,  true,  true, false],
+    ];
+
+    const LEFT_OR_MIDDLE_BOARD: BoardArray = [
+        [ true,  true,  true,  true, false],
+        [ true, false, false,  true, false],
+        [false, false,  true,  true, false],
+        [false, false, false, false, false],
+    ];
+
+    const RIGHT_OR_MIDDLE_BOARD: BoardArray = [
+        [ true,  true,  true,  true, false],
+        [false, false, false,  true, false],
+        [false, false, false,  true, false],
+        [false,  true,  true,  true, false],
+    ];
+
+    const FINISHED_LEFT_BOARD: BoardArray = [
+        [ true,  true,  true,  true,  true],
+        [ true, false,  true,  true,  true],
+        [ true, false,  true,  true,  true],
+        [ true,  true,  true,  true,  true],
+    ];
+
+    const FINISHED_MIDDLE_BOARD: BoardArray = [
+        [ true,  true,  true,  true,  true],
+        [ true, false,  true,  true,  true],
+        [ true,  true,  true,  true,  true],
+        [false,  true,  true,  true,  true],
+    ];
+
+    const FINISHED_RIGHT_BOARD: BoardArray = [
+        [ true,  true,  true,  true,  true],
+        [ true,  true,  true,  true,  true],
+        [false,  true,  true,  true,  true],
+        [false,  true,  true,  true,  true],
+    ];
+
+    #[test]
+    fn start_board_allows_left_or_middle() {
+        let board = Board::new(START_BOARD, None);
+        let moves: Vec<_> = board.legal_moves().iter().cloned().filter(|mv| mv.new_board_type == Some(BoardType::LeftOrMiddle)).collect();
+        // This is a questionable test.
+        assert_eq!(moves.len(), 1);
+    }
+
+    #[test]
+    fn start_board_allows_right_or_middle() {
+        let board = Board::new(START_BOARD, None);
+        let moves: Vec<_> = board.legal_moves().iter().cloned().filter(|mv| mv.new_board_type == Some(BoardType::RightOrMiddle)).collect();
+        assert_eq!(moves.len(), 1);
+    }
+
+    #[test]
+    fn left_board_from_top_allows_left_move() {
+        let board = Board::new(LEFT_BOARD_FROM_TOP, Some(BoardType::Left));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 3, col: 0 }));
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 3, col: 1 }));
+    }
+
+    #[test]
+    fn left_board_from_top_forbids_non_left_move() {
+        let board = Board::new(LEFT_BOARD_FROM_TOP, Some(BoardType::Left));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 1, col: 1 }));
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 1 }));
+    }
+
+    #[test]
+    fn left_board_from_bottom_allows_left_move() {
+        let board = Board::new(LEFT_BOARD_FROM_BOTTOM, Some(BoardType::Left));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 1, col: 0 }));
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 0 }));
+    }
+
+    #[test]
+    fn left_board_from_bottom_forbids_non_left_move() {
+        let board = Board::new(LEFT_BOARD_FROM_BOTTOM, Some(BoardType::Left));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 1, col: 1 }));
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 1 }));
+    }
+
+    #[test]
+    fn middle_board_from_left_allows_middle_move() {
+        let board = Board::new(MIDDLE_BOARD_FROM_LEFT, Some(BoardType::Middle));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 1 }));
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 3, col: 1 }));
+    }
+
+    #[test]
+    fn middle_board_from_left_forbids_non_middle_move() {
+        let board = Board::new(MIDDLE_BOARD_FROM_LEFT, Some(BoardType::Middle));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 1, col: 1 }));
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 3, col: 0 }));
+    }
+
+    #[test]
+    fn middle_board_from_right_allows_middle_move() {
+        let board = Board::new(MIDDLE_BOARD_FROM_RIGHT, Some(BoardType::Middle));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 1, col: 0 }));
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 0 }));
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 3, col: 1 }));
+    }
+
+    #[test]
+    fn middle_board_from_right_forbids_non_middle_move() {
+        let board = Board::new(MIDDLE_BOARD_FROM_RIGHT, Some(BoardType::Middle));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 1, col: 1 }));
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 3, col: 0 }));
+    }
+
+    #[test]
+    fn right_board_from_top_allows_right_move() {
+        let board = Board::new(RIGHT_BOARD_FROM_TOP, Some(BoardType::Right));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 1 }));
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 3, col: 1 }));
+    }
+
+    #[test]
+    fn right_board_from_top_forbids_non_right_move() {
+        let board = Board::new(RIGHT_BOARD_FROM_TOP, Some(BoardType::Right));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 3, col: 0 }));
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 0 }));
+    }
+
+    #[test]
+    fn right_board_from_bottom_allows_right_move() {
+        let board = Board::new(RIGHT_BOARD_FROM_BOTTOM, Some(BoardType::Right));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 1, col: 1 }));
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 1, col: 0 }));
+    }
+
+    #[test]
+    fn right_board_from_bottom_forbids_non_right_move() {
+        let board = Board::new(RIGHT_BOARD_FROM_BOTTOM, Some(BoardType::Right));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 3, col: 0 }));
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 0 }));
+    }
+
+    #[test]
+    fn left_or_middle_board_allows_left_move() {
+        let board = Board::new(LEFT_OR_MIDDLE_BOARD, Some(BoardType::LeftOrMiddle));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        let move_types: Vec<_> = board.legal_moves().iter().map(|mv| mv.new_board_type).collect();
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 0 }));
+        assert!(move_types.iter().any(|mv| *mv == Some(BoardType::Left)));
+    }
+
+    #[test]
+    fn left_or_middle_board_allows_middle_move() {
+        let board = Board::new(LEFT_OR_MIDDLE_BOARD, Some(BoardType::LeftOrMiddle));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        let move_types: Vec<_> = board.legal_moves().iter().map(|mv| mv.new_board_type).collect();
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 1 }));
+        assert!(move_types.iter().any(|mv| *mv == Some(BoardType::Middle)));
+    }
+
+    #[test]
+    fn left_or_middle_board_forbids_right_move() {
+        let board = Board::new(LEFT_OR_MIDDLE_BOARD, Some(BoardType::LeftOrMiddle));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        let move_types: Vec<_> = board.legal_moves().iter().map(|mv| mv.new_board_type).collect();
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 1, col: 1 }));
+        assert!(!move_types.iter().any(|mv| *mv == Some(BoardType::Right)));
+    }
+
+    #[test]
+    fn right_or_middle_board_allows_right_move() {
+        let board = Board::new(RIGHT_OR_MIDDLE_BOARD, Some(BoardType::RightOrMiddle));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        let move_types: Vec<_> = board.legal_moves().iter().map(|mv| mv.new_board_type).collect();
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 1, col: 1 }));
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 1 }));
+        assert!(move_types.iter().any(|mv| *mv == Some(BoardType::Right)));
+    }
+
+    #[test]
+    fn right_or_middle_board_allows_middle_move() {
+        let board = Board::new(RIGHT_OR_MIDDLE_BOARD, Some(BoardType::RightOrMiddle));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        let move_types: Vec<_> = board.legal_moves().iter().map(|mv| mv.new_board_type).collect();
+        assert!(move_coords.iter().any(|mv| *mv == Coordinate { row: 2, col: 1 }));
+        assert!(move_types.iter().any(|mv| *mv == Some(BoardType::Middle)));
+    }
+
+    #[test]
+    fn right_or_middle_board_forbids_left_move() {
+        let board = Board::new(RIGHT_OR_MIDDLE_BOARD, Some(BoardType::RightOrMiddle));
+        let move_coords: Vec<_> = board.legal_moves().iter().map(|mv| mv.coord).collect();
+        let move_types: Vec<_> = board.legal_moves().iter().map(|mv| mv.new_board_type).collect();
+        assert!(!move_coords.iter().any(|mv| *mv == Coordinate { row: 3, col: 0 }));
+        assert!(!move_types.iter().any(|mv| *mv == Some(BoardType::Left)));
+    }
+
+    #[test]
+    fn finished_left_board_has_no_moves() {
+        let board = Board::new(FINISHED_LEFT_BOARD, Some(BoardType::Left));
+        assert!(board.legal_moves().is_empty());
+    }
+
+    #[test]
+    fn finished_middle_board_has_no_moves() {
+        let board = Board::new(FINISHED_MIDDLE_BOARD, Some(BoardType::Middle));
+        assert!(board.legal_moves().is_empty());
+    }
+
+    #[test]
+    fn finished_right_board_has_no_moves() {
+        let board = Board::new(FINISHED_RIGHT_BOARD, Some(BoardType::Right));
+        assert!(board.legal_moves().is_empty());
+    }
+}
