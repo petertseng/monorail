@@ -72,6 +72,7 @@ const POSSIBLE_MOVE_TYPES: [MoveType; 11] = [
 struct Move {
     coord: Coordinate,
     move_type: MoveType,
+    old_board_type: Option<BoardType>,
     new_board_type: Option<BoardType>,
 }
 impl Move {
@@ -262,7 +263,7 @@ impl Board {
         let mut results = Vec::new();
         for frontier_space in self.frontier().iter() {
             for move_type in POSSIBLE_MOVE_TYPES.iter() {
-                let mov = Move{coord: *frontier_space, move_type: *move_type, new_board_type: None};
+                let mov = Move{coord: *frontier_space, move_type: *move_type, old_board_type: self.board_type, new_board_type: None};
                 if !self.move_in_bounds(mov) {
                     continue;
                 }
@@ -303,7 +304,7 @@ impl Board {
                         }
 
                         for board_type in ok_board_types.iter() {
-                            results.push(Move{coord: mov.coord, move_type: mov.move_type, new_board_type: Some(*board_type)});
+                            results.push(Move{coord: mov.coord, move_type: mov.move_type, old_board_type: self.board_type, new_board_type: Some(*board_type)});
                         }
 
                     } else {
