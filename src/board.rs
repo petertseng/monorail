@@ -209,19 +209,45 @@ impl Board {
 impl Display for Board {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), Error> {
         // Print header row
-        try!(formatter.write_str("   "));
+        try!(formatter.write_str("    "));
         for i in 0..NUM_COLS {
-            try!(write!(formatter, "{: >5} ", i));
+            try!(write!(formatter, " {}", i));
         }
         try!(formatter.write_str("\n"));
 
+        // Print top box border
+        try!(formatter.write_str("    ┌─"));
+        for _ in 0..NUM_COLS - 1 {
+            try!(formatter.write_str("┬─"));
+        }
+        try!(formatter.write_str("┐\n"));
+
         for (i, row) in self.board.iter().enumerate() {
-            try!(write!(formatter, "{: >2} ", i));
+            // Print cell content
+            try!(write!(formatter, "{: >2}  │", i));
             for col in row.iter() {
-                try!(write!(formatter, "{: >5} ", col));
+                let chr = if *col { "x" } else { " " };
+                try!(write!(formatter, "{}│", chr));
             }
             try!(formatter.write_str("\n"));
+
+            // Print box border between rows
+            if i != NUM_ROWS - 1 {
+                try!(formatter.write_str("    ├─"));
+                for _ in 0..NUM_COLS - 1 {
+                    try!(formatter.write_str("┼─"));
+                }
+                try!(formatter.write_str("┤\n"));
+            }
         }
+
+        // Print bottom box border
+        try!(formatter.write_str("    └─"));
+        for _ in 0..NUM_COLS - 1 {
+            try!(formatter.write_str("┴─"));
+        }
+        try!(formatter.write_str("┘\n"));
+
         write!(formatter, "{:?}", self.board_type)
     }
 }
