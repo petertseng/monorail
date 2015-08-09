@@ -7,12 +7,10 @@ use monorail::player::Player;
 use std::env;
 use std::io;
 
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+#[derive(Copy, Clone, Debug)]
 enum GameResult {
-    PlaceholderAlpha,
     JunSeokWin,
     YeonSeungWin,
-    PlaceholderBeta,
 }
 
 impl GameResult {
@@ -22,13 +20,11 @@ impl GameResult {
             (GameResult::JunSeokWin, _) => false,
             (GameResult::YeonSeungWin, Player::YeonSeung) => true,
             (GameResult::YeonSeungWin, _) => false,
-            (GameResult::PlaceholderAlpha, _) => panic!("Can't evaluate winningness of alpha"),
-            (GameResult::PlaceholderBeta, _) => panic!("Can't evaluate winningness of beta"),
         }
     }
 }
 
-fn minimax_alpha_beta(player: Player, board: &mut Board, initial_alpha: GameResult, initial_beta: GameResult) -> (GameResult, Option<Move>) {
+fn game_result(player: Player, board: &mut Board) -> (GameResult, Option<Move>) {
     let moves = board.legal_moves();
     // There are no more moves, which means my opponent completed the railroad.
     // So I lose.
@@ -38,48 +34,26 @@ fn minimax_alpha_beta(player: Player, board: &mut Board, initial_alpha: GameResu
             Player::JunSeok => (GameResult::YeonSeungWin, None),
         }
     }
-    let mut best = match player {
-        Player::YeonSeung => initial_alpha,
-        Player::JunSeok => initial_beta,
-    };
-    let mut alpha = initial_alpha;
-    let mut beta = initial_beta;
-    let mut best_move = None;
 
     for possible_move in moves.iter() {
         board.make_move(*possible_move);
-        let (reply, _) = minimax_alpha_beta(player.opponent(), board, alpha, beta);
+        let (reply, _) = game_result(player.opponent(), board);
         board.undo_move(*possible_move);
 
-        match player {
-            Player::YeonSeung => {
-                if reply > best {
-                    best = reply;
-                    alpha = reply;
-                    best_move = Some(*possible_move);
-                }
-                if best >= GameResult::YeonSeungWin {
-                    return (best, best_move);
-                }
-            },
-            Player::JunSeok => {
-                if reply < best {
-                    best = reply;
-                    beta = reply;
-                    best_move = Some(*possible_move);
-                }
-                if best <= GameResult::JunSeokWin {
-                    return (best, best_move);
-                }
-            },
-        }
-
-        if alpha >= beta {
-            return (best, best_move);
+        // If I have any move that forces a win, I use that move to win.
+        // We can return early from the search.
+        match (player, reply) {
+            (Player::YeonSeung, GameResult::YeonSeungWin) => return (reply, Some(*possible_move)),
+            (Player::JunSeok, GameResult::JunSeokWin) => return (reply, Some(*possible_move)),
+            _ => (),
         }
     }
 
-    (best, best_move)
+    // I have no move that forces a win, therefore I must have lost.
+    match player {
+        Player::YeonSeung => (GameResult::JunSeokWin, None),
+        Player::JunSeok => (GameResult::YeonSeungWin, None),
+    }
 }
 
 fn print_result(result: GameResult, color: term::color::Color, colorize: bool) {
@@ -98,7 +72,7 @@ fn print_all_responses(player: Player, starting_board: &mut Board, colorize: boo
     for legal_move in starting_board.legal_moves().iter() {
         print!("If {:?} does: {}, ", player, legal_move);
         starting_board.make_move(*legal_move);
-        let (result, best_move) = minimax_alpha_beta(player.opponent(), starting_board, GameResult::PlaceholderAlpha, GameResult::PlaceholderBeta);
+        let (result, best_move) = game_result(player.opponent(), starting_board);
         if result.win_for(player) {
             print_result(result, term::color::BLUE, colorize);
             println!("{}", starting_board);
@@ -116,7 +90,7 @@ fn print_all_responses(player: Player, starting_board: &mut Board, colorize: boo
 }
 
 fn print_best_move(player: Player, starting_board: &mut Board) {
-    let (result, best_move) = minimax_alpha_beta(player, starting_board, GameResult::PlaceholderAlpha, GameResult::PlaceholderBeta);
+    let (result, best_move) = game_result(player, starting_board);
     println!("{:?}", result);
     match best_move {
         Some(x) => {
