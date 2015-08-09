@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 use std::fmt::{Display, Error, Formatter};
-use action::{POSSIBLE_DIRECTIONS,POSSIBLE_MOVE_TYPES,Coordinate,Move};
+use action::{POSSIBLE_DIRECTIONS,POSSIBLE_MOVE_TYPES,Coordinate,Move,MoveEffect};
 
 pub const NUM_COLS: usize = 5;
 pub const NUM_ROWS: usize = 4;
@@ -162,7 +162,7 @@ pub type BoardArray = [[bool; NUM_COLS]; NUM_ROWS];
 pub struct Board {
     board: BoardArray,
     board_type: Option<BoardType>,
-    moves_made: Vec<Move>,
+    moves_made: Vec<(Move, MoveEffect)>,
 }
 
 impl Board {
@@ -175,7 +175,10 @@ impl Board {
     }
 
     pub fn make_move(&mut self, m: Move) {
-        self.moves_made.push(m);
+        let effect = MoveEffect {
+            old_board_type: self.board_type,
+        };
+        self.moves_made.push((m, effect));
         if let Some(bt) = m.new_board_type {
             if !bt.applies_to(self.board_type) {
                 panic!("Board type is {:?}, not compatible with {:?}", self.board_type, bt);
@@ -186,8 +189,8 @@ impl Board {
     }
 
     pub fn undo_move(&mut self) -> Option<Move> {
-        if let Some(mov) = self.moves_made.pop() {
-            self.board_type = mov.old_board_type;
+        if let Some((mov, effect)) = self.moves_made.pop() {
+            self.board_type = effect.old_board_type;
             self.set_squares(mov, false);
             Some(mov)
         } else {

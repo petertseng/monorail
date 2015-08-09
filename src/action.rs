@@ -80,6 +80,11 @@ pub const POSSIBLE_MOVE_TYPES: [MoveType; 11] = [
     MoveType::LeftAndRight,
 ];
 
+#[derive(Clone)]
+pub struct MoveEffect {
+    pub old_board_type: Option<board::BoardType>,
+}
+
 #[derive(Copy, Clone)]
 pub struct Move {
     pub coord: Coordinate,
