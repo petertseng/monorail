@@ -2,3 +2,6 @@
 name = "monorail"
 version = "0.1.0"
 authors = ["Peter Tseng <pht24@cornell.edu>"]
+
+[dependencies]
+term = "0.2"
