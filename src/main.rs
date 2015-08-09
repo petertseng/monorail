@@ -183,8 +183,8 @@ impl Board {
         self.set_squares(m, true)
     }
 
-    fn undo_move(&mut self, m: Move, bt: Option<BoardType>) {
-        self.board_type = bt;
+    fn undo_move(&mut self, m: Move) {
+        self.board_type = m.old_board_type;
         self.set_squares(m, false)
     }
 
@@ -362,10 +362,9 @@ fn minimax_alpha_beta(player: Player, board: &mut Board, initial_alpha: GameResu
     let mut best_move = None;
 
     for possible_move in moves.iter() {
-        let bt = board.board_type;
         board.make_move(*possible_move);
         let (reply, _) = minimax_alpha_beta(player.opponent(), board, alpha, beta);
-        board.undo_move(*possible_move, bt);
+        board.undo_move(*possible_move);
 
         match player {
             Player::YeonSeung => {
@@ -401,7 +400,6 @@ fn minimax_alpha_beta(player: Player, board: &mut Board, initial_alpha: GameResu
 fn print_all_responses(player: Player, starting_board: &mut Board) {
     for legal_move in starting_board.legal_moves().iter() {
         print!("If {:?} does: {:?}, ", player, legal_move);
-        let bt = starting_board.board_type;
         starting_board.make_move(*legal_move);
         let (result, best_move) = minimax_alpha_beta(player.opponent(), starting_board, GameResult::PlaceholderAlpha, GameResult::PlaceholderBeta);
         match best_move {
@@ -409,11 +407,11 @@ fn print_all_responses(player: Player, starting_board: &mut Board) {
                 println!("{:?} does: {:?}, {:?}", player.opponent(), x, result);
                 starting_board.make_move(x);
                 starting_board.print();
-                starting_board.undo_move(x, bt);
+                starting_board.undo_move(x);
             }
             None => (),
         }
-        starting_board.undo_move(*legal_move, bt);
+        starting_board.undo_move(*legal_move);
     }
 }
 
@@ -423,10 +421,9 @@ fn print_best_move(player: Player, starting_board: &mut Board) {
     println!("{:?}", best_move);
     match best_move {
         Some(x) => {
-            let bt = starting_board.board_type;
             starting_board.make_move(x);
             starting_board.print();
-            starting_board.undo_move(x, bt);
+            starting_board.undo_move(x);
         },
         None => (),
     }
