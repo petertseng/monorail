@@ -171,38 +171,40 @@ impl Board {
                         break;
                     }
                 }
-                if !other_space_taken {
-                    if induces_board_type && !self.board_type_final() {
-                        let mut ok_board_types = BTreeSet::new();
-                        for board_type in POSSIBLE_BOARD_TYPES.iter() {
-                            if !board_type.applies_to(self.board_type) {
-                                continue;
-                            }
-                            if !board_type.induced_by(*frontier_space) {
-                                continue;
-                            }
-                            if mov.extensions().iter().all(|coord| board_type.induced_by(*coord)) {
-                                ok_board_types.insert(*board_type);
-                            }
-                        }
+                if other_space_taken {
+                    continue;
+                }
 
-                        // Dominated board types...
-                        if ok_board_types.contains(&BoardType::LeftOrMiddle) {
-                            ok_board_types.remove(&BoardType::Left);
-                            ok_board_types.remove(&BoardType::Middle);
-                        }
-                        if ok_board_types.contains(&BoardType::RightOrMiddle) {
-                            ok_board_types.remove(&BoardType::Right);
-                            ok_board_types.remove(&BoardType::Middle);
-                        }
+                if !induces_board_type || self.board_type_final() {
+                    results.push(mov);
+                    continue;
+                }
 
-                        for board_type in ok_board_types.iter() {
-                            results.push(mov.with_board_type(*board_type));
-                        }
-
-                    } else {
-                        results.push(mov);
+                let mut ok_board_types = BTreeSet::new();
+                for board_type in POSSIBLE_BOARD_TYPES.iter() {
+                    if !board_type.applies_to(self.board_type) {
+                        continue;
                     }
+                    if !board_type.induced_by(*frontier_space) {
+                        continue;
+                    }
+                    if mov.extensions().iter().all(|coord| board_type.induced_by(*coord)) {
+                        ok_board_types.insert(*board_type);
+                    }
+                }
+
+                // Dominated board types...
+                if ok_board_types.contains(&BoardType::LeftOrMiddle) {
+                    ok_board_types.remove(&BoardType::Left);
+                    ok_board_types.remove(&BoardType::Middle);
+                }
+                if ok_board_types.contains(&BoardType::RightOrMiddle) {
+                    ok_board_types.remove(&BoardType::Right);
+                    ok_board_types.remove(&BoardType::Middle);
+                }
+
+                for board_type in ok_board_types.iter() {
+                    results.push(mov.with_board_type(*board_type));
                 }
             }
         }
