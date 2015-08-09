@@ -14,6 +14,19 @@ enum GameResult {
     PlaceholderBeta,
 }
 
+impl GameResult {
+    fn win_for(&self, p: Player) -> bool {
+        match (*self, p) {
+            (GameResult::JunSeokWin, Player::JunSeok) => true,
+            (GameResult::JunSeokWin, _) => false,
+            (GameResult::YeonSeungWin, Player::YeonSeung) => true,
+            (GameResult::YeonSeungWin, _) => false,
+            (GameResult::PlaceholderAlpha, _) => panic!("Can't evaluate winningness of alpha"),
+            (GameResult::PlaceholderBeta, _) => panic!("Can't evaluate winningness of beta"),
+        }
+    }
+}
+
 fn minimax_alpha_beta(player: Player, board: &mut Board, initial_alpha: GameResult, initial_beta: GameResult) -> (GameResult, Option<Move>) {
     let moves = board.legal_moves();
     // There are no more moves, which means my opponent completed the railroad.
@@ -73,14 +86,17 @@ fn print_all_responses(player: Player, starting_board: &mut Board) {
         print!("If {:?} does: {}, ", player, legal_move);
         starting_board.make_move(*legal_move);
         let (result, best_move) = minimax_alpha_beta(player.opponent(), starting_board, GameResult::PlaceholderAlpha, GameResult::PlaceholderBeta);
-        match best_move {
-            Some(x) => {
-                println!("{:?} does: {}, {:?}", player.opponent(), x, result);
-                starting_board.make_move(x);
-                println!("{}", starting_board);
-                starting_board.undo_move(x);
-            }
-            None => (),
+        if result.win_for(player) {
+            println!("{:?}", result);
+            println!("{}", starting_board);
+        } else if let Some(opponent_move) = best_move {
+            print!("{:?} does: {}, ", player.opponent(), opponent_move);
+            println!("{:?}", result);
+            starting_board.make_move(opponent_move);
+            println!("{}", starting_board);
+            starting_board.undo_move(opponent_move);
+        } else {
+            panic!("no move?");
         }
         starting_board.undo_move(*legal_move);
     }
