@@ -162,6 +162,7 @@ pub type BoardArray = [[bool; NUM_COLS]; NUM_ROWS];
 pub struct Board {
     board: BoardArray,
     board_type: Option<BoardType>,
+    moves_made: Vec<Move>,
 }
 
 impl Board {
@@ -169,10 +170,12 @@ impl Board {
         Board {
             board: array,
             board_type: board_type,
+            moves_made: Vec::new(),
         }
     }
 
     pub fn make_move(&mut self, m: Move) {
+        self.moves_made.push(m);
         if let Some(bt) = m.new_board_type {
             if !bt.applies_to(self.board_type) {
                 panic!("Board type is {:?}, not compatible with {:?}", self.board_type, bt);
@@ -182,9 +185,14 @@ impl Board {
         self.set_squares(m, true)
     }
 
-    pub fn undo_move(&mut self, m: Move) {
-        self.board_type = m.old_board_type;
-        self.set_squares(m, false)
+    pub fn undo_move(&mut self) -> Option<Move> {
+        if let Some(mov) = self.moves_made.pop() {
+            self.board_type = mov.old_board_type;
+            self.set_squares(mov, false);
+            Some(mov)
+        } else {
+            None
+        }
     }
 
     fn set_squares(&mut self, m: Move, mode: bool) {

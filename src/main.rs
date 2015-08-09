@@ -38,7 +38,7 @@ fn game_result(player: Player, board: &mut Board) -> (GameResult, Option<Move>) 
     for possible_move in moves.iter() {
         board.make_move(*possible_move);
         let (reply, _) = game_result(player.opponent(), board);
-        board.undo_move(*possible_move);
+        board.undo_move();
 
         // If I have any move that forces a win, I use that move to win.
         // We can return early from the search.
@@ -81,11 +81,11 @@ fn print_all_responses(player: Player, starting_board: &mut Board, colorize: boo
             print_result(result, term::color::RED, colorize);
             starting_board.make_move(opponent_move);
             println!("{}", starting_board);
-            starting_board.undo_move(opponent_move);
+            starting_board.undo_move();
         } else {
             panic!("no move?");
         }
-        starting_board.undo_move(*legal_move);
+        starting_board.undo_move();
     }
 }
 
@@ -97,7 +97,7 @@ fn print_best_move(player: Player, starting_board: &mut Board) {
             println!("{}", x);
             starting_board.make_move(x);
             println!("{}", starting_board);
-            starting_board.undo_move(x);
+            starting_board.undo_move();
         },
         None => println!("No move"),
     }
