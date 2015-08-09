@@ -180,18 +180,11 @@ impl Board {
                     continue;
                 }
 
-                let mut ok_board_types = BTreeSet::new();
-                for board_type in POSSIBLE_BOARD_TYPES.iter() {
-                    if !board_type.applies_to(self.board_type) {
-                        continue;
-                    }
-                    if !board_type.induced_by(*frontier_space) {
-                        continue;
-                    }
-                    if mov.extensions().iter().all(|coord| board_type.induced_by(*coord)) {
-                        ok_board_types.insert(*board_type);
-                    }
-                }
+                let mut ok_board_types: BTreeSet<_> = POSSIBLE_BOARD_TYPES.iter().cloned().filter(|board_type| {
+                    board_type.applies_to(self.board_type) &&
+                        board_type.induced_by(*frontier_space) &&
+                        mov.extensions().iter().all(|coord| board_type.induced_by(*coord))
+                }).collect();
 
                 // Dominated board types...
                 if ok_board_types.contains(&BoardType::LeftOrMiddle) {
