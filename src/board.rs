@@ -90,6 +90,66 @@ impl Orientation {
     }
 }
 
+#[derive(Copy, Clone)]
+enum OrientationOption {
+    Fixed(Orientation),
+    IfRight(Orientation, Orientation),
+    IfLeft(Orientation, Orientation),
+    LeftOrMiddle(Orientation, Orientation),
+    RightOrMiddle(Orientation, Orientation),
+}
+
+impl OrientationOption {
+    fn for_board(&self, board_type: Option<BoardType>) -> &'static str {
+        let orientation = match (*self, board_type) {
+            (OrientationOption::Fixed(orientation), _) => orientation,
+            (OrientationOption::IfRight(ifright, _), Some(BoardType::Right)) => ifright,
+            (OrientationOption::IfRight(_, notright), _) => notright,
+            (OrientationOption::IfLeft(ifleft, _), Some(BoardType::Left)) => ifleft,
+            (OrientationOption::IfLeft(_, notleft), _) => notleft,
+            (OrientationOption::LeftOrMiddle(ifleft, _), Some(BoardType::Left)) => ifleft,
+            (OrientationOption::LeftOrMiddle(_, ifmiddle), Some(BoardType::Middle)) => ifmiddle,
+            (OrientationOption::LeftOrMiddle(_, _), _) => unreachable!(),
+            (OrientationOption::RightOrMiddle(ifright, _), Some(BoardType::Right)) => ifright,
+            (OrientationOption::RightOrMiddle(_, ifmiddle), Some(BoardType::Middle)) => ifmiddle,
+            (OrientationOption::RightOrMiddle(_, _), _) => unreachable!(),
+        };
+        orientation.to_str()
+    }
+}
+
+
+const ORIENTATIONS: [[OrientationOption; NUM_COLS]; NUM_ROWS] = [
+    [
+        OrientationOption::Fixed(Orientation::DownRight),
+        OrientationOption::Fixed(Orientation::LeftRight),
+        OrientationOption::Fixed(Orientation::LeftRight),
+        OrientationOption::Fixed(Orientation::LeftRight),
+        OrientationOption::Fixed(Orientation::DownLeft)
+    ],
+    [
+        OrientationOption::IfRight(Orientation::UpRight, Orientation::UpDown),
+        OrientationOption::Fixed(Orientation::DownLeft),
+        OrientationOption::Fixed(Orientation::DownRight),
+        OrientationOption::Fixed(Orientation::LeftRight),
+        OrientationOption::Fixed(Orientation::UpLeft)
+    ],
+    [
+        OrientationOption::LeftOrMiddle(Orientation::UpDown, Orientation::UpRight),
+        OrientationOption::RightOrMiddle(Orientation::UpDown, Orientation::DownLeft),
+        OrientationOption::Fixed(Orientation::UpRight),
+        OrientationOption::Fixed(Orientation::LeftRight),
+        OrientationOption::Fixed(Orientation::DownLeft)
+    ],
+    [
+        OrientationOption::Fixed(Orientation::UpRight),
+        OrientationOption::IfLeft(Orientation::LeftRight, Orientation::UpRight),
+        OrientationOption::Fixed(Orientation::LeftRight),
+        OrientationOption::Fixed(Orientation::LeftRight),
+        OrientationOption::Fixed(Orientation::UpLeft)
+    ],
+];
+
 const POSSIBLE_BOARD_TYPES: [BoardType; 5] = [
     BoardType::Left,
     BoardType::LeftOrMiddle,
