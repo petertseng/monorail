@@ -1,95 +1,8 @@
 use std::collections::BTreeSet;
+use action::{POSSIBLE_DIRECTIONS,POSSIBLE_MOVE_TYPES,Coordinate,Move};
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-struct Coordinate {
-    row: usize,
-    col: usize,
-}
-
-impl Coordinate {
-    fn move_in(&self, dir: Direction, delta: usize) -> Option<Coordinate> {
-        match dir {
-            Direction::Up => if self.row >= delta { Some(Coordinate{row: self.row - delta, col: self.col}) } else { None },
-            Direction::Down => if self.row + delta < NUM_ROWS { Some(Coordinate{row: self.row + delta, col: self.col}) } else { None },
-            Direction::Left => if self.col >= delta { Some(Coordinate{row: self.row, col: self.col - delta}) } else { None },
-            Direction::Right => if self.col + delta < NUM_COLS { Some(Coordinate{row: self.row, col: self.col + delta}) } else { None },
-        }
-    }
-    fn induces_board_type(&self) -> bool {
-        // The lower left corner of the board.
-        self.col < 2 && self.row >= 1
-    }
-}
-
-#[derive(Copy, Clone)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-const POSSIBLE_DIRECTIONS: [Direction; 4] = [
-    Direction::Up,
-    Direction::Down,
-    Direction::Left,
-    Direction::Right,
-];
-
-#[derive(Copy, Clone, Debug)]
-enum MoveType {
-    Single,
-    OneUp,
-    OneDown,
-    OneLeft,
-    OneRight,
-    TwoUp,
-    TwoDown,
-    TwoLeft,
-    TwoRight,
-    UpAndDown,
-    LeftAndRight,
-}
-const POSSIBLE_MOVE_TYPES: [MoveType; 11] = [
-    MoveType::Single,
-    MoveType::OneUp,
-    MoveType::OneDown,
-    MoveType::OneLeft,
-    MoveType::OneRight,
-    MoveType::TwoUp,
-    MoveType::TwoDown,
-    MoveType::TwoLeft,
-    MoveType::TwoRight,
-    MoveType::UpAndDown,
-    MoveType::LeftAndRight,
-];
-
-#[derive(Copy, Clone, Debug)]
-pub struct Move {
-    coord: Coordinate,
-    move_type: MoveType,
-    old_board_type: Option<BoardType>,
-    new_board_type: Option<BoardType>,
-}
-impl Move {
-    fn extensions(&self) -> Vec<Coordinate> {
-        match self.move_type {
-            MoveType::Single => vec![],
-            MoveType::OneUp => vec![self.coord.move_in(Direction::Up, 1).unwrap()],
-            MoveType::OneDown => vec![self.coord.move_in(Direction::Down, 1).unwrap()],
-            MoveType::OneLeft => vec![self.coord.move_in(Direction::Left, 1).unwrap()],
-            MoveType::OneRight => vec![self.coord.move_in(Direction::Right, 1).unwrap()],
-            MoveType::TwoUp => vec![self.coord.move_in(Direction::Up, 1).unwrap(), self.coord.move_in(Direction::Up, 2).unwrap()],
-            MoveType::TwoDown => vec![self.coord.move_in(Direction::Down, 1).unwrap(), self.coord.move_in(Direction::Down, 2).unwrap()],
-            MoveType::TwoLeft => vec![self.coord.move_in(Direction::Left, 1).unwrap(), self.coord.move_in(Direction::Left, 2).unwrap()],
-            MoveType::TwoRight => vec![self.coord.move_in(Direction::Right, 1).unwrap(), self.coord.move_in(Direction::Right, 2).unwrap()],
-            MoveType::UpAndDown => vec![self.coord.move_in(Direction::Up, 1).unwrap(), self.coord.move_in(Direction::Down, 1).unwrap()],
-            MoveType::LeftAndRight => vec![self.coord.move_in(Direction::Left, 1).unwrap(), self.coord.move_in(Direction::Right, 1).unwrap()],
-        }
-    }
-}
-
-const NUM_COLS: usize = 5;
-const NUM_ROWS: usize = 4;
+pub const NUM_COLS: usize = 5;
+pub const NUM_ROWS: usize = 4;
 
 // Hacks for the three states of the lower-left of the board in JunSeok vs YeonSeung game
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, Debug)]
@@ -198,25 +111,6 @@ impl Board {
         self.board[c.row][c.col]
     }
 
-    // Assuming that m is a move with an unoccupied coordinate!
-    // This doesn't check whether the target squares are occupied.
-    // Advantage: It's quicker. Disadvantage: It allows some illegal moves.
-    fn move_in_bounds(&self, m: Move) -> bool {
-        match m.move_type {
-            MoveType::Single => true,
-            MoveType::OneUp => m.coord.row >= 1,
-            MoveType::OneDown => m.coord.row < NUM_ROWS - 1,
-            MoveType::OneLeft => m.coord.col >= 1,
-            MoveType::OneRight => m.coord.col < NUM_COLS - 1,
-            MoveType::TwoUp => m.coord.row >= 2,
-            MoveType::TwoDown => m.coord.row < NUM_ROWS - 2,
-            MoveType::TwoLeft => m.coord.col >= 2,
-            MoveType::TwoRight => m.coord.col < NUM_COLS - 2,
-            MoveType::UpAndDown => m.coord.row >= 1 && m.coord.row < NUM_ROWS - 1,
-            MoveType::LeftAndRight => m.coord.col >= 1 && m.coord.col < NUM_COLS - 1,
-        }
-    }
-
     // This assesses whether a coordinate can be placed on the board,
     // given the current type of the board.
     fn compatible(&self, c: Coordinate) -> bool {
@@ -263,7 +157,7 @@ impl Board {
         for frontier_space in self.frontier().iter() {
             for move_type in POSSIBLE_MOVE_TYPES.iter() {
                 let mov = Move{coord: *frontier_space, move_type: *move_type, old_board_type: self.board_type, new_board_type: None};
-                if !self.move_in_bounds(mov) {
+                if !mov.in_bounds() {
                     continue;
                 }
                 let mut other_space_taken = false;

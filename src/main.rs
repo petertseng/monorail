@@ -1,7 +1,8 @@
 extern crate monorail;
 
+use monorail::action::Move;
+use monorail::board::Board;
 use monorail::player::Player;
-use monorail::board::{Board,Move};
 use std::env;
 use std::io;
 
