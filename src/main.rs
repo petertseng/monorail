@@ -72,7 +72,7 @@ const POSSIBLE_MOVE_TYPES: [MoveType; 11] = [
 struct Move {
     coord: Coordinate,
     move_type: MoveType,
-    board_type: Option<BoardType>,
+    new_board_type: Option<BoardType>,
 }
 impl Move {
     fn extensions(&self) -> Vec<Coordinate> {
@@ -173,11 +173,11 @@ struct Board {
 
 impl Board {
     fn make_move(&mut self, m: Move) {
-        if let Some(bt) =  m.board_type {
+        if let Some(bt) = m.new_board_type {
             if !bt.applies_to(self.board_type) {
                 panic!("Board type is {:?}, not compatible with {:?}", self.board_type, bt);
             }
-            self.board_type = m.board_type
+            self.board_type = m.new_board_type
         }
         self.set_squares(m, true)
     }
@@ -262,7 +262,7 @@ impl Board {
         let mut results = Vec::new();
         for frontier_space in self.frontier().iter() {
             for move_type in POSSIBLE_MOVE_TYPES.iter() {
-                let mov = Move{coord: *frontier_space, move_type: *move_type, board_type: None};
+                let mov = Move{coord: *frontier_space, move_type: *move_type, new_board_type: None};
                 if !self.move_in_bounds(mov) {
                     continue;
                 }
@@ -303,7 +303,7 @@ impl Board {
                         }
 
                         for board_type in ok_board_types.iter() {
-                            results.push(Move{coord: mov.coord, move_type: mov.move_type, board_type: Some(*board_type)});
+                            results.push(Move{coord: mov.coord, move_type: mov.move_type, new_board_type: Some(*board_type)});
                         }
 
                     } else {
