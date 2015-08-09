@@ -1,21 +1,9 @@
+extern crate monorail;
+
+use monorail::player::Player;
 use std::collections::BTreeSet;
 use std::env;
 use std::io;
-
-#[derive(Copy, Clone, Debug)]
-enum Player {
-    YeonSeung,
-    JunSeok,
-}
-
-impl Player {
-    fn opponent(&self) -> Player {
-        match *self {
-            Player::YeonSeung => Player::JunSeok,
-            Player::JunSeok => Player::YeonSeung,
-        }
-    }
-}
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 struct Coordinate {
