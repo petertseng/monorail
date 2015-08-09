@@ -222,7 +222,7 @@ impl Board {
                     continue;
                 }
                 let have_neighbor = POSSIBLE_DIRECTIONS.iter().any(|dir| {
-                    if let Some(dest) = coord.move_in(*dir, 1) { self.occupied(dest) } else { false }
+                    coord.move_in(*dir, 1).map_or(false, |x| self.occupied(x))
                 });
                 if have_neighbor {
                     results.push(coord);
@@ -233,7 +233,7 @@ impl Board {
     }
 
     fn board_type_final(&self) -> bool {
-        if let Some(x) = self.board_type { x.is_final() } else { false }
+        self.board_type.map_or(false, |x| x.is_final())
     }
 
     pub fn legal_moves(&self) -> Vec<Move> {
