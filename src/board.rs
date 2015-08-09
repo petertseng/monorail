@@ -329,8 +329,6 @@ impl Display for Board {
         for _ in 0..NUM_COLS - 1 {
             try!(formatter.write_str("┴─"));
         }
-        try!(formatter.write_str("┘\n"));
-
-        write!(formatter, "{:?}", self.board_type)
+        formatter.write_str("┘\n")
     }
 }
