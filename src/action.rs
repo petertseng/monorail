@@ -1,3 +1,4 @@
+use std::fmt::{Display, Error, Formatter};
 use board;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -73,7 +74,7 @@ pub const POSSIBLE_MOVE_TYPES: [MoveType; 11] = [
     MoveType::LeftAndRight,
 ];
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 pub struct Move {
     pub coord: Coordinate,
     move_type: MoveType,
@@ -120,6 +121,15 @@ impl Move {
             MoveType::TwoRight => vec![self.coord.unchecked_move_in(Direction::Right, 1), self.coord.unchecked_move_in(Direction::Right, 2)],
             MoveType::UpAndDown => vec![self.coord.unchecked_move_in(Direction::Up, 1), self.coord.unchecked_move_in(Direction::Down, 1)],
             MoveType::LeftAndRight => vec![self.coord.unchecked_move_in(Direction::Left, 1), self.coord.unchecked_move_in(Direction::Right, 1)],
+        }
+    }
+}
+
+impl Display for Move {
+    fn fmt(&self, formatter: &mut Formatter) -> Result<(), Error> {
+        match self.new_board_type {
+            Some(bt) => write!(formatter, "{:?} at {:?} (Board type {:?})", self.move_type, self.coord, bt),
+            None => write!(formatter, "{:?} at {:?}", self.move_type, self.coord),
         }
     }
 }

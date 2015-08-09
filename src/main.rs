@@ -70,12 +70,12 @@ fn minimax_alpha_beta(player: Player, board: &mut Board, initial_alpha: GameResu
 
 fn print_all_responses(player: Player, starting_board: &mut Board) {
     for legal_move in starting_board.legal_moves().iter() {
-        print!("If {:?} does: {:?}, ", player, legal_move);
+        print!("If {:?} does: {}, ", player, legal_move);
         starting_board.make_move(*legal_move);
         let (result, best_move) = minimax_alpha_beta(player.opponent(), starting_board, GameResult::PlaceholderAlpha, GameResult::PlaceholderBeta);
         match best_move {
             Some(x) => {
-                println!("{:?} does: {:?}, {:?}", player.opponent(), x, result);
+                println!("{:?} does: {}, {:?}", player.opponent(), x, result);
                 starting_board.make_move(x);
                 println!("{}", starting_board);
                 starting_board.undo_move(x);
@@ -89,14 +89,14 @@ fn print_all_responses(player: Player, starting_board: &mut Board) {
 fn print_best_move(player: Player, starting_board: &mut Board) {
     let (result, best_move) = minimax_alpha_beta(player, starting_board, GameResult::PlaceholderAlpha, GameResult::PlaceholderBeta);
     println!("{:?}", result);
-    println!("{:?}", best_move);
     match best_move {
         Some(x) => {
+            println!("{}", x);
             starting_board.make_move(x);
             println!("{}", starting_board);
             starting_board.undo_move(x);
         },
-        None => (),
+        None => println!("No move"),
     }
 }
 
@@ -132,7 +132,7 @@ fn main() {
 
     if legal_moves {
         for legal_move in starting_board.legal_moves().iter() {
-            println!("{:?}", legal_move);
+            println!("{}", legal_move);
         }
     }
 
@@ -156,7 +156,7 @@ fn main() {
             }
             println!("{}", starting_board);
             for (i, legal_move) in moves.iter().enumerate() {
-                println!("{} {:?}", i, legal_move);
+                println!("{} {}", i, legal_move);
             }
             println!("It's {:?}'s turn. What move?", player);
             let mut input_move = String::new();
