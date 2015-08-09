@@ -16,6 +16,15 @@ impl Coordinate {
         }
     }
 
+    fn unchecked_move_in(&self, dir: Direction, delta: usize) -> Coordinate {
+        match dir {
+            Direction::Up => Coordinate{row: self.row - delta, col: self.col},
+            Direction::Down => Coordinate{row: self.row + delta, col: self.col},
+            Direction::Left => Coordinate{row: self.row, col: self.col - delta},
+            Direction::Right => Coordinate{row: self.row, col: self.col + delta},
+        }
+    }
+
     pub fn induces_board_type(&self) -> bool {
         // The lower left corner of the board.
         self.col < 2 && self.row >= 1
@@ -101,16 +110,16 @@ impl Move {
     pub fn extensions(&self) -> Vec<Coordinate> {
         match self.move_type {
             MoveType::Single => vec![],
-            MoveType::OneUp => vec![self.coord.move_in(Direction::Up, 1).unwrap()],
-            MoveType::OneDown => vec![self.coord.move_in(Direction::Down, 1).unwrap()],
-            MoveType::OneLeft => vec![self.coord.move_in(Direction::Left, 1).unwrap()],
-            MoveType::OneRight => vec![self.coord.move_in(Direction::Right, 1).unwrap()],
-            MoveType::TwoUp => vec![self.coord.move_in(Direction::Up, 1).unwrap(), self.coord.move_in(Direction::Up, 2).unwrap()],
-            MoveType::TwoDown => vec![self.coord.move_in(Direction::Down, 1).unwrap(), self.coord.move_in(Direction::Down, 2).unwrap()],
-            MoveType::TwoLeft => vec![self.coord.move_in(Direction::Left, 1).unwrap(), self.coord.move_in(Direction::Left, 2).unwrap()],
-            MoveType::TwoRight => vec![self.coord.move_in(Direction::Right, 1).unwrap(), self.coord.move_in(Direction::Right, 2).unwrap()],
-            MoveType::UpAndDown => vec![self.coord.move_in(Direction::Up, 1).unwrap(), self.coord.move_in(Direction::Down, 1).unwrap()],
-            MoveType::LeftAndRight => vec![self.coord.move_in(Direction::Left, 1).unwrap(), self.coord.move_in(Direction::Right, 1).unwrap()],
+            MoveType::OneUp => vec![self.coord.unchecked_move_in(Direction::Up, 1)],
+            MoveType::OneDown => vec![self.coord.unchecked_move_in(Direction::Down, 1)],
+            MoveType::OneLeft => vec![self.coord.unchecked_move_in(Direction::Left, 1)],
+            MoveType::OneRight => vec![self.coord.unchecked_move_in(Direction::Right, 1)],
+            MoveType::TwoUp => vec![self.coord.unchecked_move_in(Direction::Up, 1), self.coord.unchecked_move_in(Direction::Up, 2)],
+            MoveType::TwoDown => vec![self.coord.unchecked_move_in(Direction::Down, 1), self.coord.unchecked_move_in(Direction::Down, 2)],
+            MoveType::TwoLeft => vec![self.coord.unchecked_move_in(Direction::Left, 1), self.coord.unchecked_move_in(Direction::Left, 2)],
+            MoveType::TwoRight => vec![self.coord.unchecked_move_in(Direction::Right, 1), self.coord.unchecked_move_in(Direction::Right, 2)],
+            MoveType::UpAndDown => vec![self.coord.unchecked_move_in(Direction::Up, 1), self.coord.unchecked_move_in(Direction::Down, 1)],
+            MoveType::LeftAndRight => vec![self.coord.unchecked_move_in(Direction::Left, 1), self.coord.unchecked_move_in(Direction::Right, 1)],
         }
     }
 }
