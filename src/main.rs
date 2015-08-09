@@ -1,4 +1,5 @@
 extern crate monorail;
+extern crate term;
 
 use monorail::action::Move;
 use monorail::board::Board;
@@ -81,17 +82,29 @@ fn minimax_alpha_beta(player: Player, board: &mut Board, initial_alpha: GameResu
     (best, best_move)
 }
 
-fn print_all_responses(player: Player, starting_board: &mut Board) {
+fn print_result(result: GameResult, color: term::color::Color, colorize: bool) {
+    if colorize {
+        let mut t = term::stdout().unwrap();
+        t.fg(color).unwrap();
+        t.attr(term::Attr::Bold).unwrap();
+        writeln!(t, "{:?}", result).unwrap();
+        t.reset().unwrap();
+    } else {
+        println!("{:?}", result);
+    }
+}
+
+fn print_all_responses(player: Player, starting_board: &mut Board, colorize: bool) {
     for legal_move in starting_board.legal_moves().iter() {
         print!("If {:?} does: {}, ", player, legal_move);
         starting_board.make_move(*legal_move);
         let (result, best_move) = minimax_alpha_beta(player.opponent(), starting_board, GameResult::PlaceholderAlpha, GameResult::PlaceholderBeta);
         if result.win_for(player) {
-            println!("{:?}", result);
+            print_result(result, term::color::BLUE, colorize);
             println!("{}", starting_board);
         } else if let Some(opponent_move) = best_move {
             print!("{:?} does: {}, ", player.opponent(), opponent_move);
-            println!("{:?}", result);
+            print_result(result, term::color::RED, colorize);
             starting_board.make_move(opponent_move);
             println!("{}", starting_board);
             starting_board.undo_move(opponent_move);
@@ -131,6 +144,7 @@ fn main() {
     let mut all_responses = false;
     let mut best_move = false;
     let mut legal_moves = false;
+    let mut colorize = false;
 
     for argument in env::args() {
         if argument == "-b" {
@@ -141,6 +155,9 @@ fn main() {
         }
         if argument == "-l" {
             legal_moves = true;
+        }
+        if argument == "-c" {
+            colorize = true;
         }
     }
 
@@ -157,7 +174,7 @@ fn main() {
     }
 
     if all_responses {
-        print_all_responses(starting_player, &mut starting_board);
+        print_all_responses(starting_player, &mut starting_board, colorize);
     }
 
     if interactive {
@@ -179,7 +196,7 @@ fn main() {
             io::stdin().read_line(&mut input_move).ok().expect("Failed to read line");
             let input_move = input_move.trim();
             if input_move == "analyze" || input_move == "a" {
-                print_all_responses(player, &mut starting_board);
+                print_all_responses(player, &mut starting_board, colorize);
             } else if input_move == "best" || input_move == "b" {
                 print_best_move(player, &mut starting_board);
             } else {
