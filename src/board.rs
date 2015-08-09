@@ -254,7 +254,7 @@ impl Board {
         let mut results = Vec::new();
         for frontier_space in self.frontier().iter() {
             for move_type in POSSIBLE_MOVE_TYPES.iter() {
-                let mov = match Move::new(*frontier_space, *move_type, self.board_type) {
+                let mov = match Move::new(*frontier_space, *move_type) {
                     Some(x) => x,
                     None => continue,
                 };

@@ -89,13 +89,12 @@ pub struct MoveEffect {
 pub struct Move {
     pub coord: Coordinate,
     move_type: MoveType,
-    pub old_board_type: Option<board::BoardType>,
     pub new_board_type: Option<board::BoardType>,
 }
 
 impl Move {
-    pub fn new(coord: Coordinate, move_type: MoveType, old_board_type: Option<board::BoardType>) -> Option<Move> {
-        let c = Move{coord: coord, move_type: move_type, old_board_type: old_board_type, new_board_type: None};
+    pub fn new(coord: Coordinate, move_type: MoveType) -> Option<Move> {
+        let c = Move{coord: coord, move_type: move_type, new_board_type: None};
         if c.in_bounds() { Some(c) } else { None }
     }
 
