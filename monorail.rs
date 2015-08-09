@@ -185,14 +185,11 @@ struct Board {
 
 impl Board {
     fn make_move(&mut self, m: Move) {
-        match m.board_type {
-            Some(bt) => {
-                if !bt.applies_to(self.board_type) {
-                    panic!("Board type is {:?}, not compatible with {:?}", self.board_type, bt);
-                }
-                self.board_type = m.board_type
-            },
-            None => (),
+        if let Some(bt) =  m.board_type {
+            if !bt.applies_to(self.board_type) {
+                panic!("Board type is {:?}, not compatible with {:?}", self.board_type, bt);
+            }
+            self.board_type = m.board_type
         }
         self.set_squares(m, true)
     }
@@ -276,10 +273,7 @@ impl Board {
     }
 
     fn board_type_final(&self) -> bool {
-        match self.board_type {
-            Some(x) => x.is_final(),
-            None => false,
-        }
+        if let Some(x) = self.board_type { x.is_final() } else { false }
     }
 
     fn legal_moves(&self) -> Vec<Move> {
