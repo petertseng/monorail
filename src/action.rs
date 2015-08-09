@@ -1,7 +1,7 @@
 use std::fmt::{Display, Error, Formatter};
 use board;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub struct Coordinate {
     pub row: usize,
     pub col: usize,
@@ -29,6 +29,12 @@ impl Coordinate {
     pub fn induces_board_type(&self) -> bool {
         // The lower left corner of the board.
         self.col < 2 && self.row >= 1
+    }
+}
+
+impl Display for Coordinate {
+    fn fmt(&self, formatter: &mut Formatter) -> Result<(), Error> {
+        write!(formatter, "(row {}, col {})", self.row, self.col)
     }
 }
 
@@ -128,8 +134,8 @@ impl Move {
 impl Display for Move {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), Error> {
         match self.new_board_type {
-            Some(bt) => write!(formatter, "{:?} at {:?} (Board type {:?})", self.move_type, self.coord, bt),
-            None => write!(formatter, "{:?} at {:?}", self.move_type, self.coord),
+            Some(bt) => write!(formatter, "{:?} at {} (Board type {:?})", self.move_type, self.coord, bt),
+            None => write!(formatter, "{:?} at {}", self.move_type, self.coord),
         }
     }
 }
