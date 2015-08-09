@@ -77,7 +77,7 @@ fn print_all_responses(player: Player, starting_board: &mut Board) {
             Some(x) => {
                 println!("{:?} does: {:?}, {:?}", player.opponent(), x, result);
                 starting_board.make_move(x);
-                starting_board.print();
+                println!("{}", starting_board);
                 starting_board.undo_move(x);
             }
             None => (),
@@ -93,7 +93,7 @@ fn print_best_move(player: Player, starting_board: &mut Board) {
     match best_move {
         Some(x) => {
             starting_board.make_move(x);
-            starting_board.print();
+            println!("{}", starting_board);
             starting_board.undo_move(x);
         },
         None => (),
@@ -154,7 +154,7 @@ fn main() {
                 println!("No moves left, {:?} wins", player.opponent());
                 break;
             }
-            starting_board.print();
+            println!("{}", starting_board);
             for (i, legal_move) in moves.iter().enumerate() {
                 println!("{} {:?}", i, legal_move);
             }

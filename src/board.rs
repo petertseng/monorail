@@ -1,4 +1,5 @@
 use std::collections::BTreeSet;
+use std::fmt::{Display, Error, Formatter};
 use action::{POSSIBLE_DIRECTIONS,POSSIBLE_MOVE_TYPES,Coordinate,Move};
 
 pub const NUM_COLS: usize = 5;
@@ -203,23 +204,24 @@ impl Board {
         }
         results
     }
-
-    pub fn print(&self) {
-        // Print header row
-        print!("   ");
-        for i in 0..NUM_COLS {
-            print!("{: >5} ", i);
-        }
-        println!("");
-
-        for (i, row) in self.board.iter().enumerate() {
-            print!("{: >2} ", i);
-            for col in row.iter() {
-                print!("{: >5} ", col);
-            }
-            println!("");
-        }
-        println!("{:?}", self.board_type);
-    }
 }
 
+impl Display for Board {
+    fn fmt(&self, formatter: &mut Formatter) -> Result<(), Error> {
+        // Print header row
+        try!(formatter.write_str("   "));
+        for i in 0..NUM_COLS {
+            try!(write!(formatter, "{: >5} ", i));
+        }
+        try!(formatter.write_str("\n"));
+
+        for (i, row) in self.board.iter().enumerate() {
+            try!(write!(formatter, "{: >2} ", i));
+            for col in row.iter() {
+                try!(write!(formatter, "{: >5} ", col));
+            }
+            try!(formatter.write_str("\n"));
+        }
+        write!(formatter, "{:?}", self.board_type)
+    }
+}
