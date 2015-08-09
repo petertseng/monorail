@@ -67,6 +67,29 @@ impl BoardType {
     }
 }
 
+#[derive(Copy, Clone)]
+enum Orientation {
+    UpDown,
+    LeftRight,
+    UpLeft,
+    UpRight,
+    DownLeft,
+    DownRight,
+}
+
+impl Orientation {
+    fn to_str(&self) -> &'static str {
+        match *self {
+            Orientation::UpDown => "║",
+            Orientation::LeftRight => "═",
+            Orientation::UpLeft => "╝",
+            Orientation::UpRight => "╚",
+            Orientation::DownLeft => "╗",
+            Orientation::DownRight => "╔",
+        }
+    }
+}
+
 const POSSIBLE_BOARD_TYPES: [BoardType; 5] = [
     BoardType::Left,
     BoardType::LeftOrMiddle,
