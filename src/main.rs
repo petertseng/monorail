@@ -24,12 +24,12 @@ struct Coordinate {
 }
 
 impl Coordinate {
-    fn move_in(&self, dir: Direction, delta: usize) -> Coordinate {
+    fn move_in(&self, dir: Direction, delta: usize) -> Option<Coordinate> {
         match dir {
-            Direction::Up => Coordinate{row: self.row - delta, col: self.col},
-            Direction::Down => Coordinate{row: self.row + delta, col: self.col},
-            Direction::Left => Coordinate{row: self.row, col: self.col - delta},
-            Direction::Right => Coordinate{row: self.row, col: self.col + delta},
+            Direction::Up => if self.row >= delta { Some(Coordinate{row: self.row - delta, col: self.col}) } else { None },
+            Direction::Down => if self.row + delta < NUM_ROWS { Some(Coordinate{row: self.row + delta, col: self.col}) } else { None },
+            Direction::Left => if self.col >= delta { Some(Coordinate{row: self.row, col: self.col - delta}) } else { None },
+            Direction::Right => if self.col + delta < NUM_COLS { Some(Coordinate{row: self.row, col: self.col + delta}) } else { None },
         }
     }
     fn induces_board_type(&self) -> bool {
@@ -90,16 +90,16 @@ impl Move {
     fn extensions(&self) -> Vec<Coordinate> {
         match self.move_type {
             MoveType::Single => vec![],
-            MoveType::OneUp => vec![self.coord.move_in(Direction::Up, 1)],
-            MoveType::OneDown => vec![self.coord.move_in(Direction::Down, 1)],
-            MoveType::OneLeft => vec![self.coord.move_in(Direction::Left, 1)],
-            MoveType::OneRight => vec![self.coord.move_in(Direction::Right, 1)],
-            MoveType::TwoUp => vec![self.coord.move_in(Direction::Up, 1), self.coord.move_in(Direction::Up, 2)],
-            MoveType::TwoDown => vec![self.coord.move_in(Direction::Down, 1), self.coord.move_in(Direction::Down, 2)],
-            MoveType::TwoLeft => vec![self.coord.move_in(Direction::Left, 1), self.coord.move_in(Direction::Left, 2)],
-            MoveType::TwoRight => vec![self.coord.move_in(Direction::Right, 1), self.coord.move_in(Direction::Right, 2)],
-            MoveType::UpAndDown => vec![self.coord.move_in(Direction::Up, 1), self.coord.move_in(Direction::Down, 1)],
-            MoveType::LeftAndRight => vec![self.coord.move_in(Direction::Left, 1), self.coord.move_in(Direction::Right, 1)],
+            MoveType::OneUp => vec![self.coord.move_in(Direction::Up, 1).unwrap()],
+            MoveType::OneDown => vec![self.coord.move_in(Direction::Down, 1).unwrap()],
+            MoveType::OneLeft => vec![self.coord.move_in(Direction::Left, 1).unwrap()],
+            MoveType::OneRight => vec![self.coord.move_in(Direction::Right, 1).unwrap()],
+            MoveType::TwoUp => vec![self.coord.move_in(Direction::Up, 1).unwrap(), self.coord.move_in(Direction::Up, 2).unwrap()],
+            MoveType::TwoDown => vec![self.coord.move_in(Direction::Down, 1).unwrap(), self.coord.move_in(Direction::Down, 2).unwrap()],
+            MoveType::TwoLeft => vec![self.coord.move_in(Direction::Left, 1).unwrap(), self.coord.move_in(Direction::Left, 2).unwrap()],
+            MoveType::TwoRight => vec![self.coord.move_in(Direction::Right, 1).unwrap(), self.coord.move_in(Direction::Right, 2).unwrap()],
+            MoveType::UpAndDown => vec![self.coord.move_in(Direction::Up, 1).unwrap(), self.coord.move_in(Direction::Down, 1).unwrap()],
+            MoveType::LeftAndRight => vec![self.coord.move_in(Direction::Left, 1).unwrap(), self.coord.move_in(Direction::Right, 1).unwrap()],
         }
     }
 }
@@ -207,13 +207,7 @@ impl Board {
     }
 
     fn occupied(&self, c: Coordinate) -> bool {
-        self.in_bounds(c) && self.board[c.row][c.col]
-    }
-
-    fn in_bounds(&self, c: Coordinate) -> bool {
-        // >= 0 is always true due to type limits.
-        // c.row >= 0 && c.row < NUM_ROWS && c.col >= 0 && c.col < NUM_COLS
-        c.row < NUM_ROWS && c.col < NUM_COLS
+        self.board[c.row][c.col]
     }
 
     // Assuming that m is a move with an unoccupied coordinate!
@@ -262,7 +256,7 @@ impl Board {
                     continue;
                 }
                 let have_neighbor = POSSIBLE_DIRECTIONS.iter().any(|dir| {
-                    self.occupied(coord.move_in(*dir, 1))
+                    if let Some(dest) = coord.move_in(*dir, 1) { self.occupied(dest) } else { false }
                 });
                 if have_neighbor {
                     results.push(coord);
