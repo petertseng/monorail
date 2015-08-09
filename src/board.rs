@@ -166,7 +166,10 @@ pub struct Board {
 
 impl Board {
     pub fn new(array: BoardArray, board_type: Option<BoardType>) -> Board {
-        Board{board: array, board_type: board_type}
+        Board {
+            board: array,
+            board_type: board_type,
+        }
     }
 
     pub fn make_move(&mut self, m: Move) {
