@@ -308,8 +308,8 @@ impl Display for Board {
         for (i, row) in self.board.iter().enumerate() {
             // Print cell content
             try!(write!(formatter, "{: >2}  │", i));
-            for col in row.iter() {
-                let chr = if *col { "x" } else { " " };
+            for (j, col) in row.iter().enumerate() {
+                let chr = if *col { ORIENTATIONS[i][j].for_board(self.board_type) } else { " " };
                 try!(write!(formatter, "{}│", chr));
             }
             try!(formatter.write_str("\n"));
