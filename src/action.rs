@@ -67,15 +67,21 @@ pub const POSSIBLE_MOVE_TYPES: [MoveType; 11] = [
 #[derive(Copy, Clone, Debug)]
 pub struct Move {
     pub coord: Coordinate,
-    pub move_type: MoveType,
+    move_type: MoveType,
     pub old_board_type: Option<board::BoardType>,
     pub new_board_type: Option<board::BoardType>,
 }
 
 impl Move {
-    // Assuming that m is a move with an unoccupied coordinate!
-    // This doesn't check whether the target squares are occupied.
-    // Advantage: It's quicker. Disadvantage: It allows some illegal moves.
+    pub fn new(coord: Coordinate, move_type: MoveType, old_board_type: Option<board::BoardType>) -> Option<Move> {
+        let c = Move{coord: coord, move_type: move_type, old_board_type: old_board_type, new_board_type: None};
+        if c.in_bounds() { Some(c) } else { None }
+    }
+
+    pub fn with_board_type(&self, new_board_type: board::BoardType) -> Move {
+        Move{new_board_type: Some(new_board_type), .. *self}
+    }
+
     pub fn in_bounds(&self) -> bool {
         match self.move_type {
             MoveType::Single => true,

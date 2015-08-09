@@ -156,10 +156,10 @@ impl Board {
         let mut results = Vec::new();
         for frontier_space in self.frontier().iter() {
             for move_type in POSSIBLE_MOVE_TYPES.iter() {
-                let mov = Move{coord: *frontier_space, move_type: *move_type, old_board_type: self.board_type, new_board_type: None};
-                if !mov.in_bounds() {
-                    continue;
-                }
+                let mov = match Move::new(*frontier_space, *move_type, self.board_type) {
+                    Some(x) => x,
+                    None => continue,
+                };
                 let mut other_space_taken = false;
                 let mut induces_board_type = frontier_space.induces_board_type();
                 for other_space in mov.extensions().iter() {
@@ -197,7 +197,7 @@ impl Board {
                         }
 
                         for board_type in ok_board_types.iter() {
-                            results.push(Move{coord: mov.coord, move_type: mov.move_type, old_board_type: self.board_type, new_board_type: Some(*board_type)});
+                            results.push(mov.with_board_type(*board_type));
                         }
 
                     } else {
