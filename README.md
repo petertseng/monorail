@@ -32,6 +32,7 @@ Possible commands are:
 
 * "analyze" or "a": The same as the `-a` flag.
 * "best" or "b": The same as the `-b` flag.
+* "undo" or "u": Undo the most recent move. (Yes, you may undo multiple times if desired)
 * (A number): Perform the move labeled with that number.
 
 ## Board arrangement

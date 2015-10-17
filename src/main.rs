@@ -173,6 +173,11 @@ fn main() {
                 print_all_responses(player, &mut starting_board, colorize);
             } else if input_move == "best" || input_move == "b" {
                 print_best_move(player, &mut starting_board);
+            } else if input_move == "undo" || input_move == "u" {
+                if let Some(_) = starting_board.undo_move() {
+                    player = player.opponent();
+                    turn_counter -= 1;
+                }
             } else {
                 let input_move: usize = match input_move.trim().parse() {
                     Ok(num) => num,
