@@ -1,5 +1,7 @@
 # monorail
 
+[![Build Status](https://travis-ci.org/petertseng/monorail.svg?branch=master)](https://travis-ci.org/petertseng/monorail)
+
 This is a small program written to analyze the game of Monorail played in [The Genius](https://en.wikipedia.org/wiki/The_Genius_%28TV_series%29).
 Monorail is alternately known as [Venice Connection](https://boardgamegeek.com/boardgame/1910/venice-connection) by Alex Randolph.
 A Kickstarter version of this game is known as [Racing Stripe](https://www.kickstarter.com/projects/918748661/deduction-and-racing-stripe) by Scott Green.
